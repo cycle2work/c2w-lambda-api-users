@@ -1,4 +1,5 @@
 import nock from "nock";
+import { MongoMemoryServer } from "mongodb-memory-server";
 
 import { handler } from ".";
 import { CLUBS_COLLECTION, USERS_COLLECTION, DB_NAME } from "./config";
@@ -16,29 +17,21 @@ import {
 
 import { getMongoClient } from "./services/mongo-db";
 
-nock("https://www.strava.com")
-    .post("/oauth/token")
-    .query({ refresh_token: mockedRefreshtoken, grant_type: "refresh_token" })
-    .reply(400, getInvalidToken())
-    .post("/oauth/token")
-    .query({ refresh_token: mockedRefreshtoken, grant_type: "refresh_token" })
-    .reply(200, getValidToken())
-    .get("/api/v3/athlete/clubs?")
-    .times(2)
-    .reply(200, listAthleteClubs());
-
 describe("`Cycle2work auth function`", () => {
+    let mongoDb;
     let client;
     let context;
     let callback;
 
     beforeAll(async () => {
-        client = await getMongoClient();
+        mongoDb = new MongoMemoryServer();
+        client = await getMongoClient(await mongoDb.getUri());
     });
 
     afterAll(async () => {
         await client.db(DB_NAME).dropDatabase();
         await client.close(true);
+        await mongoDb.stop();
     });
 
     beforeEach(() => {
@@ -48,11 +41,19 @@ describe("`Cycle2work auth function`", () => {
         callback = jest.fn();
     });
 
+    afterEach(() => {
+        nock.cleanAll();
+    });
+
     it("Invalid code provided, do not persist user data", async () => {
+        nock("https://www.strava.com")
+            .post("/oauth/token")
+            .query({ refresh_token: mockedRefreshtoken, grant_type: "refresh_token" })
+            .reply(400, getInvalidToken());
+
         await handler({ queryStringParameters: { code: mockedRefreshtoken } }, context, callback);
 
         expect(callback).toHaveBeenCalledTimes(1);
-
         const users = await client.db(DB_NAME).collection(USERS_COLLECTION).find({}).toArray();
         expect(users).toHaveLength(0);
 
@@ -61,6 +62,13 @@ describe("`Cycle2work auth function`", () => {
     });
 
     it("Valid code provided, persist user token and clubs", async () => {
+        nock("https://www.strava.com")
+            .post("/oauth/token")
+            .query({ refresh_token: mockedRefreshtoken, grant_type: "refresh_token" })
+            .reply(200, getValidToken())
+            .get("/api/v3/athlete/clubs?")
+            .reply(200, listAthleteClubs());
+
         await handler({ queryStringParameters: { code: mockedRefreshtoken } }, context, callback);
 
         expect(callback).toHaveBeenCalledTimes(1);
