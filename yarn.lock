@@ -5169,10 +5169,10 @@ stealthy-require@^1.1.1:
   resolved "https://registry.yarnpkg.com/stealthy-require/-/stealthy-require-1.1.1.tgz#35b09875b4ff49f26a777e509b3090a3226bf24b"
   integrity sha1-NbCYdbT/SfJqd35QmzCQoyJr8ks=
 
-strava-v3@^2.0.5:
-  version "2.0.5"
-  resolved "https://registry.yarnpkg.com/strava-v3/-/strava-v3-2.0.5.tgz#78762bc3314acfe1c080403b48bb18595b3b2f7c"
-  integrity sha512-xAzZIjACR577F0LLVcJyi+wBw3dlGLiL0G6mroayR4o052kiAYOVpS9G/+3el/3YFNbTIJ2pHmm4AZ5TyEqKIQ==
+strava-v3@^2.0.6:
+  version "2.0.6"
+  resolved "https://registry.yarnpkg.com/strava-v3/-/strava-v3-2.0.6.tgz#73a18ff1109ab53e6a945c2f693264ee161f2d0a"
+  integrity sha512-vV3dD75o0zuljvWFODBPNXh+3m3Fs8y6cgSfjP7EFKUNvFPVGItK0RLzp+LhLAj8pN+E+vVrOq+PcaHlb3i0/g==
   dependencies:
     bluebird "^3.5.0"
     request "^2.81.0"
